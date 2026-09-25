@@ -1,0 +1,52 @@
+name: Cambiar estado de WhatsApp
+
+on:
+  workflow_dispatch:
+    inputs:
+      estado:
+        description: "Estado de WhatsApp"
+        required: true
+        type: choice
+        options:
+          - online
+          - offline
+
+permissions:
+  contents: write
+
+jobs:
+  cambiar-estado:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Actualizar estado
+        env:
+          ESTADO: ${{ inputs.estado }}
+        run: |
+          if [ "$ESTADO" = "online" ]; then
+            ONLINE=true
+          else
+            ONLINE=false
+          fi
+
+          cat > status.json <<EOF
+          {
+            "online": $ONLINE,
+            "updated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+      - name: Guardar cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add status.json
+
+          git diff --cached --quiet || \
+          git commit -m "Actualizar estado de WhatsApp"
+
+          git push
