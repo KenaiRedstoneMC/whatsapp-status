@@ -2,50 +2,88 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Estado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WhatsApp - Kenai</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#f0f2f5;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
+* {
+    box-sizing: border-box;
 }
 
-.card{
-    background:white;
-    padding:18px 24px;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    box-shadow:0 3px 15px #0002;
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #efeae2;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-.dot{
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#25d366;
+.card {
+    width: 330px;
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.15);
 }
 
-.offline{
-    background:#8696a0;
+.avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #25D366;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
-.name{
-    font-weight:bold;
-    font-size:17px;
+.info {
+    flex: 1;
 }
 
-.status{
-    color:#667781;
-    margin-top:4px;
-    font-size:14px;
+.name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #111;
+}
+
+.status {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #667781;
+    font-size: 14px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #25D366;
+}
+
+.offline {
+    background: #8696a0;
+}
+
+.loading {
+    background: #f0ad4e;
+}
+
+.time {
+    margin-top: 5px;
+    font-size: 11px;
+    color: #8696a0;
 }
 </style>
 </head>
@@ -53,39 +91,98 @@ body{
 <body>
 
 <div class="card">
-    <div id="dot" class="dot"></div>
 
-    <div>
-        <div class="name">Kenai</div>
-        <div id="status" class="status">Comprobando...</div>
+    <div class="avatar">K</div>
+
+    <div class="info">
+
+        <div class="name">
+            Kenai
+        </div>
+
+        <div class="status">
+            <span id="dot" class="dot loading"></span>
+            <span id="statusText">
+                Comprobando...
+            </span>
+        </div>
+
+        <div id="time" class="time">
+            Actualizando...
+        </div>
+
     </div>
+
 </div>
 
 <script>
-async function actualizar() {
+
+async function actualizarEstado() {
+
     try {
-        const respuesta = await fetch("status.json?t=" + Date.now());
+
+        const respuesta = await fetch(
+            "status.json?t=" + Date.now(),
+            {
+                cache: "no-store"
+            }
+        );
+
         const datos = await respuesta.json();
 
         const dot = document.getElementById("dot");
-        const status = document.getElementById("status");
+        const texto = document.getElementById("statusText");
+        const hora = document.getElementById("time");
 
-        if (datos.online) {
-            dot.classList.remove("offline");
-            status.textContent = "En línea";
+        if (datos.online === true) {
+
+            dot.className = "dot";
+            texto.textContent = "En línea";
+
         } else {
-            dot.classList.add("offline");
-            status.textContent = "Desconectado";
+
+            dot.className = "dot offline";
+            texto.textContent = "Desconectado";
+
         }
 
-    } catch(e) {
-        document.getElementById("status").textContent =
+        if (datos.updated_at) {
+
+            const fecha = new Date(datos.updated_at);
+
+            hora.textContent =
+                "Última actualización: " +
+                fecha.toLocaleTimeString("es-ES");
+
+        } else {
+
+            hora.textContent = "Estado actualizado";
+
+        }
+
+    } catch (error) {
+
+        document.getElementById("dot").className =
+            "dot loading";
+
+        document.getElementById("statusText").textContent =
             "Estado no disponible";
+
+        document.getElementById("time").textContent =
+            "No se pudo comprobar";
+
     }
+
 }
 
-actualizar();
-setInterval(actualizar, 10000);
+
+/* Primera comprobación */
+actualizarEstado();
+
+
+/* Comprobar cada 5 segundos */
+setInterval(actualizarEstado, 5000);
+
 </script>
 
 </body>
