@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estado</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f0f2f5;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.card{
+    background:white;
+    padding:18px 24px;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    box-shadow:0 3px 15px #0002;
+}
+
+.dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#25d366;
+}
+
+.offline{
+    background:#8696a0;
+}
+
+.name{
+    font-weight:bold;
+    font-size:17px;
+}
+
+.status{
+    color:#667781;
+    margin-top:4px;
+    font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <div id="dot" class="dot"></div>
+
+    <div>
+        <div class="name">Kenai</div>
+        <div id="status" class="status">Comprobando...</div>
+    </div>
+</div>
+
+<script>
+async function actualizar() {
+    try {
+        const respuesta = await fetch("status.json?t=" + Date.now());
+        const datos = await respuesta.json();
+
+        const dot = document.getElementById("dot");
+        const status = document.getElementById("status");
+
+        if (datos.online) {
+            dot.classList.remove("offline");
+            status.textContent = "En línea";
+        } else {
+            dot.classList.add("offline");
+            status.textContent = "Desconectado";
+        }
+
+    } catch(e) {
+        document.getElementById("status").textContent =
+            "Estado no disponible";
+    }
+}
+
+actualizar();
+setInterval(actualizar, 10000);
+</script>
+
+</body>
+</html>
